@@ -18,15 +18,15 @@ services:
       - "-ecx"
       - >
         /nakama/nakama migrate up --database.address postgres:localdb@postgres:5432/nakama &&
-        exec /nakama/nakama --name nakama1 --database.address postgres:localdb@postgres:5432/nakama --logger.level DEBUG
+        exec /nakama/nakama --name nakama1 --database.address postgres:localdb@postgres:5432/nakama --logger.level DEBUG --runtime.js_entrypoint "index.js"
     ports:
       - "7350:7350"
       - "7351:7351"
     volumes:
-      - ./src/modules:/nakama/data/modules
+      - ./dist/modules:/nakama/data/modules
 
   node-app:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.dev
     volumes:
