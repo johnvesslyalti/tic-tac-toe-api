@@ -38,6 +38,7 @@ services:
       - nakama
     environment:
       - PORT=5000
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
       - NAKAMA_HOST=nakama
       - NAKAMA_PORT=7350
       - NAKAMA_SERVER_KEY=defaultkey

@@ -1,6 +1,17 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
 
 const app = express();
+
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+app.use(
+  cors({
+    origin: frontendUrl,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
+
 const port = process.env.PORT || 5000;
 
 app.get("/", (req: Request, res: Response) => {
