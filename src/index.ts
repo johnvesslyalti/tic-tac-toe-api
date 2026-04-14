@@ -12,7 +12,12 @@ app.use(
   }),
 );
 
+app.use(express.json());
+
 const port = process.env.PORT || 5000;
+const nakamaHost = process.env.NAKAMA_HOST || "nakama";
+const nakamaPort = process.env.NAKAMA_PORT || "7350";
+const nakamaServerKey = process.env.NAKAMA_SERVER_KEY || "defaultkey";
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Tic-Tac-Toe Node Service (TypeScript) is running!");
@@ -21,8 +26,80 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/health", (req: Request, res: Response) => {
   res.json({
     status: "ok",
-    nakama_host: process.env.NAKAMA_HOST,
+    nakama_host: nakamaHost,
   });
+});
+
+/**
+ * Shared Authentication Proxy to Nakama
+ */
+async function authenticateWithNakama(
+  email: string,
+  pass: string,
+  create: boolean,
+  username?: string,
+) {
+  const url = new URL(
+    `http://${nakamaHost}:${nakamaPort}/v2/account/authenticate/email`,
+  );
+  url.searchParams.append("create", create.toString());
+  if (username) {
+    url.searchParams.append("username", username);
+  }
+
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${Buffer.from(`${nakamaServerKey}:`).toString("base64")}`,
+    },
+    body: JSON.stringify({ email, password: pass }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw { status: response.status, ...data };
+  }
+
+  return data;
+}
+
+app.post("/auth/register", async (req: Request, res: Response) => {
+  const { email, password, username } = req.body;
+
+  if (!email || !password || !username) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const session = await authenticateWithNakama(
+      email,
+      password,
+      true,
+      username,
+    );
+    res.status(201).json(session);
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    res.status(error.status || 500).json(error);
+  }
+});
+
+app.post("/auth/login", async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const session = await authenticateWithNakama(email, password, false);
+    res.json(session);
+  } catch (error: any) {
+    console.error("Login error:", error);
+    res.status(error.status || 500).json(error);
+  }
 });
 
 app.listen(port, () => {
