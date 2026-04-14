@@ -55,16 +55,15 @@ export function makeMove(state: GameState, index: number): GameState {
     return state;
   }
 
-  const newBoard = [...state.board];
-  newBoard[index] = state.currentPlayer;
+  // Mutate directly for performance in Nakama match loops
+  state.board[index] = state.currentPlayer;
 
-  const winner = checkWinner(newBoard);
-  const nextPlayer = state.currentPlayer === "X" ? "O" : "X";
+  const winner = checkWinner(state.board);
+  if (winner) {
+    state.winner = winner;
+  } else {
+    state.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
+  }
 
-  return {
-    ...state,
-    board: newBoard,
-    currentPlayer: winner ? state.currentPlayer : nextPlayer,
-    winner: winner,
-  };
+  return state;
 }

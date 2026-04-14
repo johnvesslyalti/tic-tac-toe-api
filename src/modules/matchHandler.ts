@@ -147,8 +147,7 @@ export function matchLoop(
       const validationResult = validation.isValidMove(state, moveIndex, userId);
 
       if (validationResult.valid) {
-        const newState = logic.makeMove(state, moveIndex);
-        Object.assign(state, newState);
+        logic.makeMove(state, moveIndex);
 
         logger.info(
           "Move accepted from %s at %d. Winner: %s",

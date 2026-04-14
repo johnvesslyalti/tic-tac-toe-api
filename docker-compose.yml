@@ -4,6 +4,7 @@ services:
     environment:
       POSTGRES_DB: nakama
       POSTGRES_PASSWORD: localdb
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - data:/var/lib/postgresql/data
     ports:
