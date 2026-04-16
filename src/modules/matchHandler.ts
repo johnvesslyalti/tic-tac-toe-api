@@ -48,8 +48,8 @@ function tryUpdateMatchLabel(
 export function matchInit(
   ctx: nkruntime.Context,
   logger: nkruntime.Logger,
-  nk: nkruntime.Nakama,
-  params: { [key: string]: string },
+  _nk: nkruntime.Nakama,
+  _params: { [key: string]: string },
 ): { state: logic.GameState; tickRate: number; label: string } {
   logger.info("Tic-Tac-Toe match initialized");
   const initialState = logic.createInitialState();
@@ -67,8 +67,8 @@ export function matchJoinAttempt(
   dispatcher: nkruntime.MatchDispatcher,
   tick: number,
   state: logic.GameState,
-  presence: nkruntime.Presence,
-  metadata: { [key: string]: any },
+  _presence: nkruntime.Presence,
+  _metadata: { [key: string]: unknown },
 ): { state: logic.GameState; accept: boolean; rejectMessage?: string } {
   const playerCount = Object.keys(state.players).length;
   if (playerCount >= 2) {
@@ -138,8 +138,8 @@ export function matchLoop(
       let data: { index: number };
       try {
         data = JSON.parse(nk.binaryToString(message.data));
-      } catch (e: any) {
-        logger.error("Failed to parse message data: %s", e.message);
+      } catch (e: unknown) {
+        logger.error("Failed to parse message data: %s", (e as Error).message);
         return;
       }
 
@@ -245,7 +245,7 @@ export function matchTerminate(
   dispatcher: nkruntime.MatchDispatcher,
   tick: number,
   state: logic.GameState,
-  graceSeconds: number,
+  _graceSeconds: number,
 ): { state: logic.GameState } {
   logger.info("Match terminating");
   return { state };
@@ -276,8 +276,11 @@ export function matchmakerMatched(
   try {
     const matchId = nk.matchCreate("tic-tac-toe", {});
     return matchId;
-  } catch (error: any) {
-    logger.error("Failed to create match from matchmaker: %s", error.message);
+  } catch (error: unknown) {
+    logger.error(
+      "Failed to create match from matchmaker: %s",
+      (error as Error).message,
+    );
     throw error;
   }
 }

@@ -7,7 +7,7 @@ export interface GameState {
   currentPlayer: "X" | "O";
   winner: string | null;
   players: { [userId: string]: "X" | "O" };
-  presences: { [userId: string]: any }; // Using any since Presence depends on nkruntime
+  presences: { [userId: string]: nkruntime.Presence }; // Using nkruntime namespace
   gameStarted: boolean;
   endTicks: number; // Number of ticks to wait before closing match after game ends
 }

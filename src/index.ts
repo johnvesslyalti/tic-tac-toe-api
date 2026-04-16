@@ -80,9 +80,10 @@ app.post("/auth/register", async (req: Request, res: Response) => {
       username,
     );
     res.status(201).json(session);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Registration error:", error);
-    res.status(error.status || 500).json(error);
+    const status = (error as { status?: number })?.status || 500;
+    res.status(status).json(error);
   }
 });
 
@@ -96,9 +97,10 @@ app.post("/auth/login", async (req: Request, res: Response) => {
   try {
     const session = await authenticateWithNakama(email, password, false);
     res.json(session);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
-    res.status(error.status || 500).json(error);
+    const status = (error as { status?: number })?.status || 500;
+    res.status(status).json(error);
   }
 });
 
