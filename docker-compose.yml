@@ -26,9 +26,7 @@ services:
       - >
         /nakama/nakama migrate up --database.address postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} &&
         exec /nakama/nakama --name nakama1 --database.address postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} --logger.level INFO --runtime.js_entrypoint "index.js"
-    ports:
-      - "7350:7350"
-      - "7351:7351"
+    # Ports removed: handled by Caddy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7350/"]
       interval: 10s
@@ -44,18 +42,33 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    ports:
-      - "5000:5000"
+    # Ports removed: handled by Caddy
     depends_on:
       nakama:
         condition: service_started
     environment:
       - PORT=5000
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - FRONTEND_URL=${FRONTEND_URL}
       - NAKAMA_HOST=nakama
       - NAKAMA_PORT=${NAKAMA_PORT}
       - NAKAMA_SERVER_KEY=${NAKAMA_SERVER_KEY}
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - node-app
+      - nakama
+
 volumes:
   data:
     name: tic-tac-toe-postgres-data
+  caddy_data:
+  caddy_config:

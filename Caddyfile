@@ -1,0 +1,10 @@
+tic-tac-toe.duckdns.org {
+    # Proxy requests for Authentication to the Node.js Proxy
+    handle_path /auth/* {
+        reverse_proxy node-app:5000
+    }
+
+    # Proxy WebSocket connections and the rest to Nakama
+    # Caddy handles WebSocket headers automatically
+    reverse_proxy nakama:7350
+}
