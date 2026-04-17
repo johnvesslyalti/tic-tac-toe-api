@@ -38,10 +38,7 @@ services:
   node-app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    volumes:
-      - .:/app
-      - /app/node_modules
+      dockerfile: Dockerfile
     depends_on:
       nakama:
         condition: service_started
