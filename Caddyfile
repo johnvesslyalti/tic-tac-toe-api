@@ -2,9 +2,13 @@ tic-tac-toe-api.johnvesslyalti.xyz {
     # Compress responses for better performance
     encode gzip
 
-    # Route authentication, health checks, and the home page to the Node server
-    # Note: We use 'handle' (not 'handle_path') to keep the prefixes intact
-    handle /auth/* /health / {
+    # Named matcher for routes that should be handled by the Node.js server
+    @node_app {
+        path /auth/* /health /
+    }
+
+    # Route these matches to the Node server
+    handle @node_app {
         reverse_proxy node-app:5000
     }
 
