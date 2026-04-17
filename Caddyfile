@@ -1,10 +1,15 @@
 tic-tac-toe-api.johnvesslyalti.xyz {
-    # Proxy requests for Authentication to the Node.js Proxy
-    handle_path /auth/* {
+    # Compress responses for better performance
+    encode gzip
+
+    # Route authentication, health checks, and the home page to the Node server
+    # Note: We use 'handle' (not 'handle_path') to keep the prefixes intact
+    handle /auth/* /health / {
         reverse_proxy node-app:5000
     }
 
-    # Proxy WebSocket connections and the rest to Nakama
-    # Caddy handles WebSocket headers automatically
-    reverse_proxy nakama:7350
+    # Route everything else to Nakama (API, Dashboard, and WebSockets)
+    handle {
+        reverse_proxy nakama:7350
+    }
 }
