@@ -1,9 +1,8 @@
 services:
   postgres:
     image: postgres:12.2-alpine
+    env_file: .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - data:/var/lib/postgresql/data/pgdata
@@ -22,19 +21,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
     entrypoint:
       - "/bin/sh"
       - "-ecx"
       - >
         /nakama/nakama migrate up --database.address postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} &&
         exec /nakama/nakama --name nakama1 --database.address postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB} --logger.level INFO --runtime.js_entrypoint "index.js"
-    # Ports removed: handled by Caddy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7350/"]
       interval: 10s
       timeout: 5s
       retries: 5
-
 
   node-app:
     build:
@@ -43,16 +42,13 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    # Ports removed: handled by Caddy
     depends_on:
       nakama:
         condition: service_started
+    env_file:
+      - .env
     environment:
       - PORT=5000
-      - FRONTEND_URL=${FRONTEND_URL}
-      - NAKAMA_HOST=nakama
-      - NAKAMA_PORT=${NAKAMA_PORT}
-      - NAKAMA_SERVER_KEY=${NAKAMA_SERVER_KEY}
 
   caddy:
     image: caddy:2-alpine
